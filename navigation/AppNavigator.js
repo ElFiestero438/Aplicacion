@@ -10,24 +10,52 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ProfileStack = createNativeStackNavigator();
 
-const TabNavigator = () => {
+const TabNavigator = () =>{
     const {user} = useAuth();
-    return (
-        <Tab.Navigator initialRouteName='Home'
-        screenOptions ={({route})}=>({
-            tabBarIcon: ({color, size,focused}) => {
-                let iconName;
-                if (route.name === "Home") {
+
+    return(
+        <Tab.Navigator 
+            initialRouteName="Home" 
+            screenOptions={({route})=>({
+                tabBarIcon: ({color, size, focused})=>{
+                    let iconName;
+
+                    if (route.name === "Home") {
                         iconName = focused ? 'home' : 'home-outline';
-                }else if(route.name === "Settings") {
+                    } else if(route.name === "Settings"){
                         iconName = focused ? 'settings' : 'settings-outline';
-                }else if(route.name === "User") {
-                        iconName = focused ? 'person' : 'person-outline';
-                }
-        })>
+                    } else if(route.name === "User"){
+                        if (user?.photoURL) {
+                            return (
+                                <Image
+                                    source={{ uri: user.photoURL }}
+                                    style={{
+                                        width: size,
+                                        height: size,
+                                        borderRadius: size / 2,
+                                        borderWidth: focused ? 2 : 0,
+                                        borderColor: focused ? '#0077B6' : 'transparent',
+                                    }}
+                                />
+                            );
+                        }
+                        // Si no tiene foto, mostrar el icono por defecto
+                        return <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />;
+                    } 
+                    
+                    return <Ionicons name={iconName} size={size} color={color} />;
+                },
+                tabBarActiveTintColor: '#0077B6',
+                tabBarInactiveTintColor: 'gray',
+                headerShown: false,
+            })}
+        >
+            <Tab.Screen name ="Home" component={HomeScreen} options={{tabBarLabel:'Home'}}/>
+            <Tab.Screen name ="User" component={UserScreen} options={{tabBarLabel:'Usuario'}}/>
+            <Tab.Screen name ="Settings" component={SettingsScreen} options={{tabBarLabel:'Ajustes'}}/>
         </Tab.Navigator>
     )
-}
+}   
 
 const AuthNavigator = () => {
     return (
@@ -73,3 +101,5 @@ const AppNavigator = () => {
         </AuthContext.Provider>   
     );
 }
+
+export default AppNavigator;
