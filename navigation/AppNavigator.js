@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from '../src/screens/SplashScreen';
 import RegisterScreen from '../src/screens/auth/RegisterScreen';
 import LoginScreen from '../src/screens/auth/LoginScreen';
+import { onAuthStateChanged } from "firebase/auth";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
