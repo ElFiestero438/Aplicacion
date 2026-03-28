@@ -1,6 +1,6 @@
 import { useState } from "react";
 import colors from "../../constants/colors";
-import { View, Text, Alert, TouchableOpacity } from "react-native";
+import { StyleSheet , TextInput, View, Text, Alert, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import {auth} from "../../services/firebaseService";
@@ -96,11 +96,11 @@ const RegisterScreen = () => {
                 <Text style={styles.title}>Registro</Text>
                 
                 <View style={styles.inputContainer}>
-                    <Ionicons name="person-outline" size={24} color={colors.luminous} />
+                    <Ionicons name="person-outline" size={24} color={colors.iluminado} />
                     <TextInput 
                         style={styles.input} 
                         placeholder="Nombre completo" 
-                        placeholderTextColor={colors.thin}
+                        placeholderTextColor={colors.suave}
                         value={name} 
                         onChangeText={setName} 
                         autoCapitalize="words" 
@@ -108,11 +108,11 @@ const RegisterScreen = () => {
                 </View>
 
                 <View style={styles.inputContainer}>
-                    <Ionicons name="mail-outline" size={24} color={colors.luminous} />
+                    <Ionicons name="mail-outline" size={24} color={colors.iluminado} />
                     <TextInput 
                         style={styles.input} 
                         placeholder="Correo electrónico" 
-                        placeholderTextColor={colors.thin}
+                        placeholderTextColor={colors.suave}
                         value={email} 
                         onChangeText={setEmail} 
                         keyboardType="email-address" 
@@ -121,11 +121,11 @@ const RegisterScreen = () => {
                 </View>
 
                 <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={24} color={colors.luminous} />
+                    <Ionicons name="lock-closed-outline" size={24} color={colors.iluminado} />
                     <TextInput 
                         style={styles.input} 
                         placeholder="Contraseña" 
-                        placeholderTextColor={colors.thin}
+                        placeholderTextColor={colors.suave}
                         value={password} 
                         onChangeText={setPassword} 
                         secureTextEntry 
@@ -134,11 +134,11 @@ const RegisterScreen = () => {
                 </View>
 
                 <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={24} color={colors.luminous} />
+                    <Ionicons name="lock-closed-outline" size={24} color={colors.iluminado} />
                     <TextInput 
                         style={styles.input} 
                         placeholder="Confirmar contraseña" 
-                        placeholderTextColor={colors.thin}
+                        placeholderTextColor={colors.suave}
                         value={confirmPassword} 
                         onChangeText={setConfirmPassword} 
                         secureTextEntry 
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: colors.luminous,
+        color: colors.iluminado,
         marginBottom: 30,
     },
     inputContainer: {
@@ -193,11 +193,11 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 15,
         paddingHorizontal: 10,
-        color: colors.luminous,
+        color: colors.iluminado,
         fontSize: 16,
     },
     registerButton: {
-        backgroundColor: colors.variante8,
+        backgroundColor: colors.variante5,
         paddingVertical: 15,
         paddingHorizontal: 40,
         borderRadius: 10,
@@ -207,17 +207,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     buttonText: {
-        color: colors.luminous,
+        color: colors.iluminado,
         fontSize: 18,
         fontWeight: 'bold',
     },
     linkText: {
-        color: colors.luminous,
+        color: colors.iluminado,
         fontSize: 16,
         textDecorationLine: 'underline',
     },
     errorText: {
-        color: colors.error,
+        color: colors.alerta,
         fontSize: 14,
         marginBottom: 10,
         textAlign: 'center',

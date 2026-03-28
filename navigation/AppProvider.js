@@ -9,7 +9,7 @@ const AppProvider =({children}) =>{
         let mounted = true;
         const init = async() =>{
             try {
-                await sqliteService
+                await sqliteService.init();
             } catch (e) {
                 console.warn('Mensaje con el error');
             }finally{

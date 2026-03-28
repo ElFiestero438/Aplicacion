@@ -1,18 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
+import { onAuthStateChanged } from "firebase/auth";
+
+import { auth } from '../src/services/firebaseService';
+
 import SplashScreen from '../src/screens/SplashScreen';
 import RegisterScreen from '../src/screens/auth/RegisterScreen';
 import LoginScreen from '../src/screens/auth/LoginScreen';
-import { onAuthStateChanged } from "firebase/auth";
+import HomeScreen from '../src/screens/HomeScreen';
+import UserScreen from '../src/screens/UserScreen';
+import SettingsScreen from '../src/screens/SettingsScreen';
+
+const AuthContext = createContext({});
+
+export const useAuth = () => useContext(AuthContext);
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ProfileStack = createNativeStackNavigator();
 
-const TabNavigator = () =>{
-    const {user} = useAuth();
+const TabNavigator = () => {
+    const { user } = useAuth();
 
     return(
         <Tab.Navigator 
@@ -51,22 +63,12 @@ const TabNavigator = () =>{
                 headerShown: false,
             })}
         >
-            <Tab.Screen name ="Home" component={HomeScreen} options={{tabBarLabel:'Home'}}/>
-            <Tab.Screen name ="User" component={UserScreen} options={{tabBarLabel:'Usuario'}}/>
-            <Tab.Screen name ="Settings" component={SettingsScreen} options={{tabBarLabel:'Ajustes'}}/>
+            <Tab.Screen name="Home" component={HomeScreen} options={{tabBarLabel:'Home'}}/>
+            <Tab.Screen name="User" component={UserScreen} options={{tabBarLabel:'Usuario'}}/>
+            <Tab.Screen name="Settings" component={SettingsScreen} options={{tabBarLabel:'Ajustes'}}/>
         </Tab.Navigator>
     )
 }   
-
-const AuthNavigator = () => {
-    return (
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name='Splash' component={SplashScreen} />
-            <Stack.Screen name='Register' component={RegisterScreen} />
-            <Stack.Screen name='Login' component={LoginScreen} />
-        </Stack.Navigator>
-    )
-}
 
 const AppNavigator = () => {
     const [user, setUser] = useState(null);
@@ -80,7 +82,7 @@ const AppNavigator = () => {
         return () => unsuscribe();
     },[]);
 
-    const authContextValue ={
+    const authContextValue = {
         user,
         setUser,
         isLoading,
@@ -88,16 +90,20 @@ const AppNavigator = () => {
     };
 
     if(isLoading){
-        return <SplashScreen/>;//el null se reemplazará por el splash screen
+        return <SplashScreen/>;
     }
 
     return (
         <AuthContext.Provider value={authContextValue}>
-            <Stack.Navigator initialRouteName='Splash'>
-                <Stack.Screen name='Splash' component={SplashScreen} />
-                <Stack.Screen name='Register' component={RegisterScreen} />
-                <Stack.Screen name='Login' component={LoginScreen} />
-
+            <Stack.Navigator initialRouteName={user ? 'Main' : 'Login'}>
+                {user ? (
+                    <Stack.Screen name="Main" component={TabNavigator} options={{headerShown: false}} />
+                ) : (
+                    <>
+                        <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+                        <Stack.Screen name="Register" component={RegisterScreen} options={{headerShown: false}} />
+                    </>
+                )}
             </Stack.Navigator>
         </AuthContext.Provider>   
     );

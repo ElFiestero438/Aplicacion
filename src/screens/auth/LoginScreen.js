@@ -5,13 +5,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from "firebase/auth";
-import auth from "../../services/firebaseService";
+import { auth } from "../../services/firebaseService";
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigation = useNavigation();
+
+        // Verificar que auth está definido
+    console.log('Auth en Login:', auth);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -69,11 +72,11 @@ const LoginScreen = () => {
                 <Text style={styles.title}>Iniciar Sesión</Text>
                 
                 <View style={styles.inputContainer}>
-                    <Ionicons name="mail-outline" size={24} color={colors.luminous} />
+                    <Ionicons name="mail-outline" size={24} color={colors.iluminado} />
                     <TextInput 
                         style={styles.input} 
                         placeholder="Correo electrónico" 
-                        placeholderTextColor={colors.thin}
+                        placeholderTextColor={colors.suave}
                         value={email} 
                         onChangeText={setEmail} 
                         keyboardType="email-address" 
@@ -82,11 +85,11 @@ const LoginScreen = () => {
                 </View>
 
                 <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={24} color={colors.luminous} />
+                    <Ionicons name="lock-closed-outline" size={24} color={colors.iluminado} />
                     <TextInput 
                         style={styles.input} 
                         placeholder="Contraseña" 
-                        placeholderTextColor={colors.thin}
+                        placeholderTextColor={colors.suave}
                         value={password} 
                         onChangeText={setPassword} 
                         secureTextEntry 
@@ -125,7 +128,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: colors.luminous,
+        color: colors.iluminado,
         marginBottom: 30,
     },
     inputContainer: {
@@ -141,11 +144,11 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 15,
         paddingHorizontal: 10,
-        color: colors.luminous,
+        color: colors.iluminado,
         fontSize: 16,
     },
     loginButton: {
-        backgroundColor: colors.variante8,
+        backgroundColor: colors.variante5,
         paddingVertical: 15,
         paddingHorizontal: 40,
         borderRadius: 10,
@@ -155,17 +158,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     buttonText: {
-        color: colors.luminous,
+        color: colors.iluminado,
         fontSize: 18,
         fontWeight: 'bold',
     },
     linkText: {
-        color: colors.luminous,
+        color: colors.iluminado,
         fontSize: 16,
         textDecorationLine: 'underline',
     },
     errorText: {
-        color: colors.error,
+        color: colors.alerta,
         fontSize: 14,
         marginBottom: 10,
         textAlign: 'center',
