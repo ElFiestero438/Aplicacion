@@ -47,32 +47,32 @@ Adicionalmente, se configuró correctamente la conexión con Firebase y se aplic
 ### Registro de usuario
 Permite crear una cuenta con correo, nombre y contraseña
 
-![Registro](./Screenshots/registro (2).png)
+<img src="./screenshots/Registro (2).png" width="300"/>
 
 ---
 
 ### Inicio de sesión
 Permite ingresar a la aplicación con correo y conraseña registrados
 
-![Login](./Screenshots/login.png)
+<img src="./screenshots/Login.png" width="300"/>
 
 ---
 
 ### Vista principal
 Pantalla con el Home de la aplicación
 
-![Vista principal](./Screenshots/vista1.png)
+<img src="./screenshots/vista1.png" width="300"/>
 
 ---
 
 ### Segunda vista
 Pantalla dedicada a la info del usuario
 
-![Vista secundaria](./Screenshots/vista2.png)
+<img src="./screenshots/vista2.png" width="300"/>
 
 ---
 
 ### Tercera vista
 Pantalla para el cierre de sesión
 
-![Vista adicional](./Screenshots/vista3.png)
+<img src="./screenshots/vista3.png" width="300"/>
