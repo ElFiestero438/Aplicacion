@@ -1,34 +1,31 @@
 export default{
-    //Colores principales y variantes
-    principal: '#2d0af5',
-    variante1: '#1a0a8c',
-    variante2: '#4d3bff',
-    variante3: '#6e5cff',
-    variante4: '#8f7dff',
-    variante5: '#b09eff',
+    //Colores principales y variantes (verdes tipo atletico nacional)
+    principal: '#0B8F3A',
+    variante1: '#066329',
+    variante2: '#12A94A',
+    variante3: '#2BC263',
+    variante4: '#5ED98C',
+    variante5: '#8EE8B0',
 
     //Colores para el texto y las sombras
-    defecto: '#faf7f7',
-    subtitilo: '#c0c0c0',
+    defecto: '#fafafa',
+    subtitilo: '#bfbfbf',
     suave: '#e0e0e0',
-    delicado: '#f0f0f0',
+    delicado: '#f2f2f2',
     iluminado: '#ffffff',
     oscuro: '#000000',
 
     //Colores para los background o fondos
-    fondloClaro: '#f5f5f5',
-    fondloOscuro: '#500808',
+    fondloClaro: '#f3faf5',
+    fondloOscuro: '#053d1c',
 
     //colores de alertas y acciones
     alerta: '#ff4d4d',
-    exito: '#4dff4d',
-    advertencia: '#ef7f0f',
-    informacion: '#4dfff3',
+    exito: '#28c76f',
+    advertencia: '#f59e0b',
+    informacion: '#22c55e',
 
     //Gradientes
-    gradientePrimario: ['#007bff', '#00d4ff'],
-    gradienteSecundario: ['#ff7f50', '#ff6347'],
-    
-
-
+    gradientePrimario: ['#0B8F3A', '#2BC263'],
+    gradienteSecundario: ['#066329', '#5ED98C'],
 }
