@@ -58,7 +58,7 @@ Permite ingresar a la aplicación con correo y conraseña registrados
 
 ---
 
-### Vista principal
+### Primer vista
 Pantalla con el Home de la aplicación
 
 <img src="./Screenshots/vista1.png" width="300"/>
@@ -68,7 +68,7 @@ Pantalla con el Home de la aplicación
 ### Segunda vista
 Pantalla dedicada a la info del usuario
 
-<img src="./Screenshots/vista2.png" width="300"/>
+<img src="./Screenshots/vista2.jpeg" width="300"/>
 
 ---
 
