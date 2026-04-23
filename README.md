@@ -49,37 +49,20 @@ Permite ingresar a la aplicación con credenciales registradas
 ---
 
 ### Vista principal (Home)
-Pantalla donde se gestionan los hábitos  
+Pantalla donde se gestionan los hábitos
 
 <img src="./Screenshots/Home.jpeg" width="300"/>
 
 ---
 
 ### Perfil de usuario
-Pantalla con información del usuario y estadísticas  
+Pantalla con el perfil del usuario 
 
 <img src="./Screenshots/User.jpeg" width="300"/>
 
 ---
 
 ### Cierre de sesión
-Pantalla o vista relacionada con el logout  
+Vista relacionada con el logout  
 
 <img src="./Screenshots/Settings.jpeg" width="300"/>
-
----
-
-## Próximos pasos
-
-- Mejorar validaciones  
-- Implementar persistencia de datos  
-- Mejorar la interfaz  
-- Agregar más funcionalidades  
-
----
-
-## Instalación
-
-1. Clonar el repositorio:
-```bash
-git clone https://github.com/ElFiestero438/NOMBRE_DEL_REPO.git
