@@ -1,31 +1,29 @@
 import { initializeApp } from "firebase/app";
-import { 
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut
-} from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_APP_ID
+  apiKey: "AIzaSyDu7x5RdZmod32qPJkZau5nZF251kjYjqQ",
+  authDomain: "appamigo-3e3ad.firebaseapp.com",
+  projectId: "appamigo-3e3ad",
+  storageBucket: "appamigo-3e3ad.firebasestorage.app",
+  messagingSenderId: "339058270359",
+  appId: "1:339058270359:web:0ac33b1888bdf35bc0c9d2"
 };
 
 const app = initializeApp(firebaseConfig);
 
-const auth = getAuth(app);
+let auth;
 
-export { 
-  auth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut
-};
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+  });
+} catch (e) {
+  auth = initializeAuth(app);
+}
 
-console.log("CONFIG:", firebaseConfig);
+const db = getFirestore(app);
+
+export { auth, db };

@@ -1,6 +1,6 @@
 import colors from "../../constants/colors";
 import { useState } from "react";
-import { StyleSheet, TextInput, TouchableOpacity, View, Text, Alert } from "react-native";
+import { StyleSheet, TextInput, TouchableOpacity, View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
@@ -13,55 +13,40 @@ const LoginScreen = () => {
     const [error, setError] = useState('');
     const navigation = useNavigation();
 
-        // Verificar que auth está definido
-    console.log('Auth en Login:', auth);
-
     const handleLogin = async () => {
         if (!email || !password) {
-            setError('Por favor completa todos los campos');
+            setError('Completa todos los campos');
             return;
         }
 
         setError('');
-        
+
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            
-            Alert.alert('Éxito', 'Inicio de sesión exitoso', [
-                { text: 'OK', onPress: () => navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'Main' }],
-                }) }
-            ]);
+            await signInWithEmailAndPassword(auth, email, password);
+
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Main' }],
+            });
+
         } catch (error) {
-            console.error('Error al iniciar sesión:', error);
-            
             let errorMessage = 'Error al iniciar sesión';
-            
+
             switch (error.code) {
                 case 'auth/user-not-found':
-                    errorMessage = 'No existe una cuenta con este correo electrónico';
+                    errorMessage = 'Usuario no encontrado';
                     break;
                 case 'auth/wrong-password':
                     errorMessage = 'Contraseña incorrecta';
                     break;
                 case 'auth/invalid-email':
-                    errorMessage = 'El formato del correo electrónico no es válido';
-                    break;
-                case 'auth/user-disabled':
-                    errorMessage = 'Esta cuenta ha sido deshabilitada';
-                    break;
-                case 'auth/too-many-requests':
-                    errorMessage = 'Demasiados intentos fallidos. Intenta más tarde';
+                    errorMessage = 'Correo inválido';
                     break;
                 case 'auth/network-request-failed':
-                    errorMessage = 'Error de conexión. Verifica tu internet';
+                    errorMessage = 'Sin conexión a internet';
                     break;
-                default:
-                    errorMessage = error.message || 'Error desconocido';
             }
-            
+
             setError(errorMessage);
         }
     };
@@ -93,18 +78,17 @@ const LoginScreen = () => {
                         value={password} 
                         onChangeText={setPassword} 
                         secureTextEntry 
-                        autoCapitalize="none" 
                     />
                 </View>
 
                 {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
                 <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                    <Text style={styles.buttonText}>Iniciar Sesión</Text>
+                    <Text style={styles.buttonText}>Entrar</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                    <Text style={styles.linkText}>¿No tienes cuenta? Regístrate</Text>
+                    <Text style={styles.linkText}>Crear cuenta</Text>
                 </TouchableOpacity>
             </View>
         </LinearGradient>
@@ -120,7 +104,7 @@ const styles = StyleSheet.create({
     formContainer: {
         width: '90%',
         maxWidth: 400,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backgroundColor: 'rgba(255,255,255,0.1)',
         borderRadius: 20,
         padding: 30,
         alignItems: 'center',
@@ -134,7 +118,7 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: 'rgba(255,255,255,0.2)',
         borderRadius: 10,
         marginBottom: 15,
         paddingHorizontal: 15,
@@ -145,15 +129,12 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         paddingHorizontal: 10,
         color: colors.iluminado,
-        fontSize: 16,
     },
     loginButton: {
         backgroundColor: colors.variante5,
         paddingVertical: 15,
-        paddingHorizontal: 40,
         borderRadius: 10,
         marginTop: 20,
-        marginBottom: 15,
         width: '100%',
         alignItems: 'center',
     },
@@ -164,14 +145,12 @@ const styles = StyleSheet.create({
     },
     linkText: {
         color: colors.iluminado,
-        fontSize: 16,
+        marginTop: 10,
         textDecorationLine: 'underline',
     },
     errorText: {
         color: colors.alerta,
-        fontSize: 14,
         marginBottom: 10,
-        textAlign: 'center',
     },
 });
 
