@@ -62,14 +62,12 @@ export const escucharHabitos = (user, callback) => {
   return unsubscribe;
 };
 
-export const toggleHabito = async (id, estado) => {
+export const toggleHabito = async (id) => {
   if (!id) return;
 
   const ref = doc(db, "habitos", id);
 
-  await updateDoc(ref, {
-    completadoHoy: !estado
-  });
+  await deleteDoc(ref);
 };
 
 export const actualizarHoraHabito = async (id, nuevaHora) => {

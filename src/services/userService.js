@@ -44,7 +44,6 @@ export const getUserData = async (userId) => {
     } else {
       console.warn(`No se encontró un documento para el usuario con ID: ${userId}`);
       
-      // Crear nuevo documento
       const userData = {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

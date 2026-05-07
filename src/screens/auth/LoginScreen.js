@@ -14,7 +14,7 @@ const LoginScreen = () => {
     const navigation = useNavigation();
 
     const handleLogin = async () => {
-        if (!email || !password) {
+        if (!email.trim() || !password.trim()) {
             setError('Completa todos los campos');
             return;
         }
@@ -22,12 +22,7 @@ const LoginScreen = () => {
         setError('');
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-
-            navigation.reset({
-                index: 0,
-                routes: [{ name: 'Main' }],
-            });
+            await signInWithEmailAndPassword(auth, email.trim(), password.trim());
 
         } catch (error) {
             let errorMessage = 'Error al iniciar sesión';
@@ -37,13 +32,17 @@ const LoginScreen = () => {
                     errorMessage = 'Usuario no encontrado';
                     break;
                 case 'auth/wrong-password':
-                    errorMessage = 'Contraseña incorrecta';
+                case 'auth/invalid-credential':
+                    errorMessage = 'Credenciales incorrectas';
                     break;
                 case 'auth/invalid-email':
                     errorMessage = 'Correo inválido';
                     break;
                 case 'auth/network-request-failed':
                     errorMessage = 'Sin conexión a internet';
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = 'Demasiados intentos. Intenta más tarde';
                     break;
             }
 

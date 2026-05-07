@@ -37,7 +37,6 @@ const RegisterScreen = () => {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
-            // Actualizar el perfil del usuario con el nombre
             await updateProfile(user, {
                 displayName: name
             });

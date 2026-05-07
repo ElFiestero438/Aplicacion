@@ -53,7 +53,6 @@ export const uploadImageToCloudinary = async (imageUri) => {
 
     const formData = new FormData();
     
-    // Manejar URI según plataforma
     const uri = Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri;
     
     formData.append('file', {
