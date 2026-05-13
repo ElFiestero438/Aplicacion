@@ -1,226 +1,477 @@
 import { useState } from "react";
+
 import colors from "../../constants/colors";
-import { StyleSheet , TextInput, View, Text, Alert, TouchableOpacity } from "react-native";
+
+import {
+    StyleSheet,
+    TextInput,
+    View,
+    Text,
+    Alert,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView
+} from "react-native";
+
 import { useNavigation } from "@react-navigation/native";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import {auth} from "../../services/firebaseService";
+
+import {
+    createUserWithEmailAndPassword,
+    updateProfile
+} from "firebase/auth";
+
+import { auth } from "../../services/firebaseService";
+
 import { LinearGradient } from "expo-linear-gradient";
+
 import { Ionicons } from "@expo/vector-icons";
 
 const RegisterScreen = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [name, setName] = useState('');
-    const [error, setError] = useState('');
+
+    const [email, setEmail] = useState("");
+
+    const [password, setPassword] = useState("");
+
+    const [confirmPassword, setConfirmPassword] =
+        useState("");
+
+    const [name, setName] = useState("");
+
+    const [error, setError] = useState("");
+
     const navigation = useNavigation();
 
     const handleRegister = async () => {
-        if (!name || !email || !password || !confirmPassword) {
-            setError('Todos los campos son obligatorios');
-            return;
-        }
-        
-        if (password !== confirmPassword) {
-            setError('Las contraseñas no coinciden');
-            return;
-        }
-        
-        if (password.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres');
+
+        if (
+            !name ||
+            !email ||
+            !password ||
+            !confirmPassword
+        ) {
+
+            setError(
+                "Todos los campos son obligatorios"
+            );
+
             return;
         }
 
-        setError('');
-        
+        if (password !== confirmPassword) {
+
+            setError(
+                "Las contraseñas no coinciden"
+            );
+
+            return;
+        }
+
+        if (password.length < 6) {
+
+            setError(
+                "La contraseña debe tener mínimo 6 caracteres"
+            );
+
+            return;
+        }
+
+        setError("");
+
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+            const userCredential =
+                await createUserWithEmailAndPassword(
+                    auth,
+                    email.trim(),
+                    password.trim()
+                );
+
             const user = userCredential.user;
-            
+
             await updateProfile(user, {
                 displayName: name
             });
-            
-            Alert.alert('Éxito', 'Usuario registrado correctamente', [
-                { text: 'OK', onPress: () => navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'Login' }],
-                }) }
-            ]);
+
+            Alert.alert(
+                "Éxito",
+                "Cuenta creada correctamente",
+                [
+                    {
+                        text: "Continuar",
+                        onPress: () =>
+                            navigation.reset({
+                                index: 0,
+                                routes: [
+                                    {
+                                        name: "Login"
+                                    }
+                                ]
+                            })
+                    }
+                ]
+            );
+
         } catch (error) {
-            console.error('=== ERROR DE REGISTRO ===');
-            console.error('Código de error:', error.code);
-            console.error('Mensaje de error:', error.message);
-            console.error('Error completo:', error);
-            console.error('========================');
-            
-            let errorMessage = 'Error al registrar usuario';
-            
+
+            let errorMessage =
+                "Error al registrar usuario";
+
             switch (error.code) {
-                case 'auth/email-already-in-use':
-                    errorMessage = 'Ya existe una cuenta con este correo electrónico';
+
+                case "auth/email-already-in-use":
+                    errorMessage =
+                        "Ese correo ya está registrado";
                     break;
-                case 'auth/invalid-email':
-                    errorMessage = 'El formato del correo electrónico no es válido';
+
+                case "auth/invalid-email":
+                    errorMessage =
+                        "Correo inválido";
                     break;
-                case 'auth/weak-password':
-                    errorMessage = 'La contraseña es muy débil';
+
+                case "auth/weak-password":
+                    errorMessage =
+                        "Contraseña muy débil";
                     break;
-                case 'auth/operation-not-allowed':
-                    errorMessage = 'El registro no está habilitado en Firebase Console';
+
+                case "auth/network-request-failed":
+                    errorMessage =
+                        "Sin conexión a internet";
                     break;
-                case 'auth/network-request-failed':
-                    errorMessage = 'Error de conexión. Verifica tu internet y configuración de Firebase';
-                    break;
-                case 'auth/invalid-api-key':
-                    errorMessage = 'API Key de Firebase inválida. Verifica tu configuración';
-                    break;
-                case 'auth/project-not-found':
-                    errorMessage = 'Proyecto de Firebase no encontrado. Verifica tu Project ID';
-                    break;
-                case 'auth/configuration-not-found':
-                    errorMessage = 'Configuración de Firebase no encontrada';
-                    break;
-                default:
-                    errorMessage = `${error.message || 'Error desconocido'} (Código: ${error.code})`;
             }
-            
+
             setError(errorMessage);
         }
     };
 
     return (
-        <LinearGradient colors={colors.gradientePrimario} style={styles.container}>
-            <View style={styles.formContainer}>
-                <Text style={styles.title}>Registro</Text>
-                
-                <View style={styles.inputContainer}>
-                    <Ionicons name="person-outline" size={24} color={colors.iluminado} />
-                    <TextInput 
-                        style={styles.input} 
-                        placeholder="Nombre completo" 
-                        placeholderTextColor={colors.suave}
-                        value={name} 
-                        onChangeText={setName} 
-                        autoCapitalize="words" 
-                    />
-                </View>
 
-                <View style={styles.inputContainer}>
-                    <Ionicons name="mail-outline" size={24} color={colors.iluminado} />
-                    <TextInput 
-                        style={styles.input} 
-                        placeholder="Correo electrónico" 
-                        placeholderTextColor={colors.suave}
-                        value={email} 
-                        onChangeText={setEmail} 
-                        keyboardType="email-address" 
-                        autoCapitalize="none" 
-                    />
-                </View>
+        <LinearGradient
+            colors={["#f5f7fb", "#eef7f1"]}
+            style={styles.container}
+        >
 
-                <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={24} color={colors.iluminado} />
-                    <TextInput 
-                        style={styles.input} 
-                        placeholder="Contraseña" 
-                        placeholderTextColor={colors.suave}
-                        value={password} 
-                        onChangeText={setPassword} 
-                        secureTextEntry 
-                        autoCapitalize="none" 
-                    />
-                </View>
+            <KeyboardAvoidingView
+                behavior={
+                    Platform.OS === "ios"
+                        ? "padding"
+                        : undefined
+                }
+                style={{ flex: 1 }}
+            >
 
-                <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={24} color={colors.iluminado} />
-                    <TextInput 
-                        style={styles.input} 
-                        placeholder="Confirmar contraseña" 
-                        placeholderTextColor={colors.suave}
-                        value={confirmPassword} 
-                        onChangeText={setConfirmPassword} 
-                        secureTextEntry 
-                        autoCapitalize="none" 
-                    />
-                </View>
+                <ScrollView
+                    contentContainerStyle={
+                        styles.scrollContent
+                    }
+                    showsVerticalScrollIndicator={
+                        false
+                    }
+                >
 
-                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                    <View
+                        style={styles.logoContainer}
+                    >
 
-                <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-                    <Text style={styles.buttonText}>Registrarse</Text>
-                </TouchableOpacity>
+                        <View
+                            style={styles.logoCircle}
+                        >
 
-                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                    <Text style={styles.linkText}>¿Ya tienes cuenta? Inicia sesión</Text>
-                </TouchableOpacity>
-            </View>
+                            <Ionicons
+                                name="person-add"
+                                size={36}
+                                color="#fff"
+                            />
+
+                        </View>
+
+                        <Text style={styles.appName}>
+                            Crear cuenta
+                        </Text>
+
+                        <Text style={styles.subtitle}>
+                            Empieza a construir mejores hábitos
+                        </Text>
+
+                    </View>
+
+                    <View style={styles.card}>
+
+                        <View
+                            style={
+                                styles.inputContainer
+                            }
+                        >
+
+                            <Ionicons
+                                name="person-outline"
+                                size={22}
+                                color="#666"
+                            />
+
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Nombre completo"
+                                placeholderTextColor="#999"
+                                value={name}
+                                onChangeText={setName}
+                                autoCapitalize="words"
+                            />
+
+                        </View>
+
+                        <View
+                            style={
+                                styles.inputContainer
+                            }
+                        >
+
+                            <Ionicons
+                                name="mail-outline"
+                                size={22}
+                                color="#666"
+                            />
+
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Correo electrónico"
+                                placeholderTextColor="#999"
+                                value={email}
+                                onChangeText={setEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                            />
+
+                        </View>
+
+                        <View
+                            style={
+                                styles.inputContainer
+                            }
+                        >
+
+                            <Ionicons
+                                name="lock-closed-outline"
+                                size={22}
+                                color="#666"
+                            />
+
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Contraseña"
+                                placeholderTextColor="#999"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                            />
+
+                        </View>
+
+                        <View
+                            style={
+                                styles.inputContainer
+                            }
+                        >
+
+                            <Ionicons
+                                name="shield-checkmark-outline"
+                                size={22}
+                                color="#666"
+                            />
+
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Confirmar contraseña"
+                                placeholderTextColor="#999"
+                                value={confirmPassword}
+                                onChangeText={
+                                    setConfirmPassword
+                                }
+                                secureTextEntry
+                            />
+
+                        </View>
+
+                        {error ? (
+
+                            <Text
+                                style={
+                                    styles.errorText
+                                }
+                            >
+                                {error}
+                            </Text>
+
+                        ) : null}
+
+                        <TouchableOpacity
+                            style={
+                                styles.registerButton
+                            }
+                            onPress={handleRegister}
+                            activeOpacity={0.85}
+                        >
+
+                            <Text
+                                style={
+                                    styles.buttonText
+                                }
+                            >
+                                Crear cuenta
+                            </Text>
+
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() =>
+                                navigation.navigate(
+                                    "Login"
+                                )
+                            }
+                        >
+
+                            <Text
+                                style={styles.linkText}
+                            >
+                                ¿Ya tienes cuenta?
+                                Inicia sesión
+                            </Text>
+
+                        </TouchableOpacity>
+
+                    </View>
+
+                </ScrollView>
+
+            </KeyboardAvoidingView>
+
         </LinearGradient>
     );
 };
 
 const styles = StyleSheet.create({
+
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        flex: 1
     },
-    formContainer: {
-        width: '90%',
-        maxWidth: 400,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: 20,
-        padding: 30,
-        alignItems: 'center',
+
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: "center",
+        paddingHorizontal: 25,
+        paddingVertical: 40
     },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: colors.iluminado,
-        marginBottom: 30,
+
+    logoContainer: {
+        alignItems: "center",
+        marginBottom: 30
     },
+
+    logoCircle: {
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        backgroundColor: "#34c759",
+        justifyContent: "center",
+        alignItems: "center",
+
+        shadowColor: "#34c759",
+        shadowOffset: {
+            width: 0,
+            height: 8
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+
+        elevation: 8
+    },
+
+    appName: {
+        fontSize: 30,
+        fontWeight: "800",
+        color: "#111",
+        marginTop: 18
+    },
+
+    subtitle: {
+        fontSize: 15,
+        color: "#666",
+        marginTop: 6,
+        textAlign: "center"
+    },
+
+    card: {
+        backgroundColor: "#fff",
+        borderRadius: 28,
+        padding: 24,
+
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 6
+        },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+
+        elevation: 5
+    },
+
     inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: 10,
-        marginBottom: 15,
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#f5f7fb",
+        borderRadius: 16,
         paddingHorizontal: 15,
-        width: '100%',
+        marginBottom: 15,
+        borderWidth: 1,
+        borderColor: "#ececec"
     },
+
     input: {
         flex: 1,
-        paddingVertical: 15,
+        paddingVertical: 16,
         paddingHorizontal: 10,
-        color: colors.iluminado,
-        fontSize: 16,
+        color: "#111",
+        fontSize: 15
     },
+
     registerButton: {
-        backgroundColor: colors.variante5,
-        paddingVertical: 15,
-        paddingHorizontal: 40,
-        borderRadius: 10,
-        marginTop: 20,
-        marginBottom: 15,
-        width: '100%',
-        alignItems: 'center',
+        backgroundColor: "#34c759",
+        paddingVertical: 17,
+        borderRadius: 18,
+        alignItems: "center",
+        marginTop: 10,
+
+        shadowColor: "#34c759",
+        shadowOffset: {
+            width: 0,
+            height: 6
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+
+        elevation: 5
     },
+
     buttonText: {
-        color: colors.iluminado,
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    linkText: {
-        color: colors.iluminado,
+        color: "#fff",
         fontSize: 16,
-        textDecorationLine: 'underline',
+        fontWeight: "700"
     },
+
+    linkText: {
+        color: "#34c759",
+        textAlign: "center",
+        marginTop: 20,
+        fontWeight: "600"
+    },
+
     errorText: {
-        color: colors.alerta,
-        fontSize: 14,
+        color: "#ff3b30",
         marginBottom: 10,
-        textAlign: 'center',
-    },
+        marginTop: -5,
+        textAlign: "center"
+    }
 });
 
 export default RegisterScreen;

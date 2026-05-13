@@ -1,17 +1,29 @@
 import { useEffect, useState } from "react";
+
+import {
+    useTheme
+} from "../../navigation/ThemeContext";
+
 import {
     View,
     Text,
     TouchableOpacity,
     FlatList,
     Modal,
-    TextInput
+    TextInput,
+    StatusBar,
+    StyleSheet,
+    Alert
 } from "react-native";
 
 import colors from "../constants/colors";
+
 import { auth } from "../services/firebaseService";
+
 import { onAuthStateChanged } from "firebase/auth";
+
 import sqliteService from "../services/sqliteService";
+
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import {
@@ -25,36 +37,105 @@ import {
 
 const HomeScreen = () => {
 
-    const [habitos, setHabitos] = useState([]);
-    const [user, setUser] = useState(null);
+    const {
+        darkMode
+    } = useTheme();
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [modalAcciones, setModalAcciones] = useState(false);
+    const theme = {
+        background:
+            darkMode
+                ? "#0F172A"
+                : colors.background,
 
-    const [nuevoHabito, setNuevoHabito] = useState("");
-    const [habitoSeleccionado, setHabitoSeleccionado] = useState(null);
+        surface:
+            darkMode
+                ? "#1E293B"
+                : colors.surface,
 
-    const [hora, setHora] = useState(new Date());
+        textPrimary:
+            darkMode
+                ? "#FFFFFF"
+                : colors.textPrimary,
 
-    const [showPickerCrear, setShowPickerCrear] = useState(false);
-    const [showPickerModal, setShowPickerModal] = useState(false);
+        textSecondary:
+            darkMode
+                ? "#94A3B8"
+                : colors.textSecondary,
+
+        border:
+            darkMode
+                ? "#334155"
+                : colors.border
+    };
+
+    const [habitos, setHabitos] =
+        useState([]);
+
+    const [user, setUser] =
+        useState(null);
+
+    const [modalVisible,
+        setModalVisible] =
+        useState(false);
+
+    const [modalAcciones,
+        setModalAcciones] =
+        useState(false);
+
+    const [nuevoHabito,
+        setNuevoHabito] =
+        useState("");
+
+    const [habitoSeleccionado,
+        setHabitoSeleccionado] =
+        useState(null);
+
+    const [hora, setHora] =
+        useState(new Date());
+
+    const [showPickerCrear,
+        setShowPickerCrear] =
+        useState(false);
+
+    const [showPickerModal,
+        setShowPickerModal] =
+        useState(false);
 
     const habitosBase = [
-        { titulo: "Despertar temprano", hora: "06:00" },
-        { titulo: "Hacer ejercicio", hora: "07:00" },
-        { titulo: "Leer 20 minutos", hora: "21:00" },
-        { titulo: "Beber agua", hora: "09:00" },
-        { titulo: "Planear el día", hora: "08:00" }
+
+        {
+            titulo: "Despertar temprano",
+            hora: "06:00"
+        },
+
+        {
+            titulo: "Hacer ejercicio",
+            hora: "07:00"
+        },
+
+        {
+            titulo: "Leer 20 minutos",
+            hora: "21:00"
+        },
+
+        {
+            titulo: "Planear el día",
+            hora: "08:00"
+        }
     ];
 
-    const cerrarModalAcciones = () => {
+    const completados =
+        habitos.filter(
+            h => h.completadoHoy
+        ).length;
 
-        setShowPickerModal(false);
+    const progreso =
+        habitos.length > 0
+            ? completados / habitos.length
+            : 0;
 
-        setHabitoSeleccionado(null);
-
-        setModalAcciones(false);
-    };
+    const porcentaje =
+        Math.round(progreso * 100);
 
     const formatHora = (date) => {
 
@@ -75,38 +156,50 @@ const HomeScreen = () => {
 
         sqliteService.init();
 
-        let unsubscribeHabitos = () => {};
-        let unsubscribeLocal = () => {};
+        let unsubscribeHabitos =
+            () => {};
 
-        const unsubscribeAuth = onAuthStateChanged(
-            auth,
-            async (currentUser) => {
+        let unsubscribeLocal =
+            () => {};
 
-                setUser(currentUser);
+        const unsubscribeAuth =
+            onAuthStateChanged(
+                auth,
+                async (currentUser) => {
 
-                if (!currentUser) {
+                    setUser(currentUser);
 
-                    unsubscribeLocal =
-                        sqliteService.subscribe((data) => {
+                    if (!currentUser) {
 
-                            setHabitos(data || []);
-                        });
+                        unsubscribeLocal =
+                            sqliteService.subscribe(
+                                (data) => {
 
-                    return;
-                }
+                                    setHabitos(
+                                        data || []
+                                    );
+                                }
+                            );
 
-                await inicializarHabitos(currentUser);
+                        return;
+                    }
 
-                unsubscribeHabitos =
-                    escucharHabitos(
-                        currentUser,
-                        (data) => {
-
-                            setHabitos(data || []);
-                        }
+                    await inicializarHabitos(
+                        currentUser
                     );
-            }
-        );
+
+                    unsubscribeHabitos =
+                        escucharHabitos(
+                            currentUser,
+                            (data) => {
+
+                                setHabitos(
+                                    data || []
+                                );
+                            }
+                        );
+                }
+            );
 
         return () => {
 
@@ -119,56 +212,96 @@ const HomeScreen = () => {
 
     }, []);
 
-    const agregarHabito = async () => {
+    const agregarHabito =
+        async () => {
 
-        if (!nuevoHabito.trim()) return;
+            if (!nuevoHabito.trim())
+                return;
 
-        const horaFormateada = formatHora(hora);
+            const nombreHabito =
+                nuevoHabito.trim();
 
-        try {
-
-            if (user) {
-
-                await crearHabito(
-                    user,
-                    nuevoHabito,
-                    horaFormateada
+            const yaExiste =
+                habitos.some(
+                    h =>
+                        h.titulo
+                            .toLowerCase()
+                            .trim() ===
+                        nombreHabito
+                            .toLowerCase()
+                            .trim()
                 );
 
-            } else {
+            if (yaExiste) {
 
-                sqliteService.insertarHabito(
-                    nuevoHabito,
-                    horaFormateada
-                );
+                setModalVisible(false);
+
+                setNuevoHabito("");
+
+                return;
             }
 
-            setNuevoHabito("");
+            const horaFormateada =
+                formatHora(hora);
 
-            setHora(new Date());
+            try {
 
-            setShowPickerCrear(false);
+                if (user) {
 
-            setModalVisible(false);
+                    await crearHabito(
+                        user,
+                        nombreHabito,
+                        horaFormateada,
+                        true
+                    );
 
-        } catch (error) {
+                } else {
 
-            console.log(error);
-        }
-    };
+                    await sqliteService.insertarHabito(
+                        nombreHabito,
+                        horaFormateada
+                    );
+                }
 
-    const accionesHabito = (item) => {
+                setNuevoHabito("");
 
-        setHabitoSeleccionado(item);
+                setHora(new Date());
+
+                setModalVisible(false);
+
+                setShowPickerCrear(
+                    false
+                );
+
+            } catch (error) {
+
+                console.log(error);
+            }
+        };
+
+    const accionesHabito = (
+        item
+    ) => {
+
+        setHabitoSeleccionado(
+            item
+        );
 
         if (item?.hora) {
 
-            const [h, m] = item.hora.split(":");
+            const [h, m] =
+                item.hora.split(":");
 
-            const nuevaFecha = new Date();
+            const nuevaFecha =
+                new Date();
 
-            nuevaFecha.setHours(parseInt(h));
-            nuevaFecha.setMinutes(parseInt(m));
+            nuevaFecha.setHours(
+                parseInt(h)
+            );
+
+            nuevaFecha.setMinutes(
+                parseInt(m)
+            );
 
             setHora(nuevaFecha);
         }
@@ -178,24 +311,64 @@ const HomeScreen = () => {
 
     const completar = async () => {
 
-        if (!habitoSeleccionado) return;
+        if (!habitoSeleccionado)
+            return;
 
         try {
+
+            const ahora =
+                new Date();
+
+            const horaActual =
+                ahora.getHours() * 60 +
+                ahora.getMinutes();
+
+            const [horaHabito, minutoHabito] =
+                habitoSeleccionado.hora
+                    .split(":")
+                    .map(Number);
+
+            const minutosHabito =
+                horaHabito * 60 +
+                minutoHabito;
+
+            if (
+                !habitoSeleccionado.completadoHoy &&
+                horaActual < minutosHabito
+            ) {
+
+                Alert.alert(
+                    "Muy temprano",
+                    `Este hábito solo puede completarse después de las ${habitoSeleccionado.hora}`
+                );
+
+                return;
+            }
+
+            const hoy =
+                new Date()
+                    .toISOString()
+                    .split("T")[0];
 
             if (user) {
 
                 await toggleHabito(
-                    habitoSeleccionado.id
+                    habitoSeleccionado.id,
+                    habitoSeleccionado.completadoHoy,
+                    hoy
                 );
 
             } else {
 
-                sqliteService.eliminarHabitoLocal(
-                    habitoSeleccionado.id
+                await sqliteService.toggleHabitoLocal(
+                    habitoSeleccionado.id,
+                    hoy
                 );
             }
 
-            cerrarModalAcciones();
+            setModalAcciones(false);
+
+            setHabitoSeleccionado(null);
 
         } catch (error) {
 
@@ -203,32 +376,84 @@ const HomeScreen = () => {
         }
     };
 
-    const eliminar = async () => {
+    const eliminarHabitoAccion =
+        async () => {
 
-        if (!habitoSeleccionado) return;
+            if (!habitoSeleccionado)
+                return;
 
-        try {
+            try {
 
-            if (user) {
+                if (user) {
 
-                await eliminarHabito(
-                    habitoSeleccionado.id
+                    await eliminarHabito(
+                        habitoSeleccionado.id
+                    );
+
+                } else {
+
+                    await sqliteService.eliminarHabitoLocal(
+                        habitoSeleccionado.id
+                    );
+                }
+
+                setModalAcciones(
+                    false
                 );
 
-            } else {
-
-                sqliteService.eliminarHabitoLocal(
-                    habitoSeleccionado.id
+                setHabitoSeleccionado(
+                    null
                 );
+
+            } catch (error) {
+
+                console.log(error);
             }
+        };
 
-            cerrarModalAcciones();
+    const confirmarCambioHora =
+        async () => {
 
-        } catch (error) {
+            if (!habitoSeleccionado)
+                return;
 
-            console.log(error);
-        }
-    };
+            const nuevaHora =
+                formatHora(hora);
+
+            try {
+
+                if (user) {
+
+                    await actualizarHoraHabito(
+                        habitoSeleccionado.id,
+                        nuevaHora
+                    );
+
+                } else {
+
+                    await sqliteService.actualizarHoraLocal(
+                        habitoSeleccionado.id,
+                        nuevaHora
+                    );
+                }
+
+                setShowPickerModal(
+                    false
+                );
+
+                setModalAcciones(
+                    false
+                );
+
+                setHabitoSeleccionado(
+                    null
+                );
+
+            } catch (error) {
+
+                console.log(error);
+            }
+        };
 
     const onChangeHora = (
         event,
@@ -240,164 +465,149 @@ const HomeScreen = () => {
             setHora(selectedDate);
         }
 
-        setShowPickerCrear(false);
-        setShowPickerModal(false);
-    };
+        setShowPickerCrear(
+            false
+        );
 
-    const confirmarCambioHora = async () => {
-
-        if (!habitoSeleccionado) return;
-
-        const nuevaHora = formatHora(hora);
-
-        try {
-
-            if (user) {
-
-                await actualizarHoraHabito(
-                    habitoSeleccionado.id,
-                    nuevaHora
-                );
-
-            } else {
-
-                sqliteService.actualizarHoraLocal(
-                    habitoSeleccionado.id,
-                    nuevaHora
-                );
-            }
-
-            cerrarModalAcciones();
-
-        } catch (error) {
-
-            console.log(error);
-        }
-    };
-
-    const renderPredefinidos = () => {
-
-        return (
-
-            <View
-                style={{
-                    flexDirection: "row",
-                    flexWrap: "wrap",
-                    gap: 10
-                }}
-            >
-
-                {habitosBase.map((base, index) => {
-
-                    const existente = habitos.find(
-                        h => h.titulo === base.titulo
-                    );
-
-                    return (
-
-                        <TouchableOpacity
-                            key={index}
-                            style={{
-                                width: "48%",
-                                padding: 15,
-                                borderRadius: 12,
-                                backgroundColor: existente?.completado
-                                    ? colors.success
-                                    : colors.surface,
-                                borderWidth: 1,
-                                borderColor: colors.border
-                            }}
-                            onPress={async () => {
-
-                                if (existente) {
-
-                                    accionesHabito(existente);
-
-                                } else {
-
-                                    if (user) {
-
-                                        await crearHabito(
-                                            user,
-                                            base.titulo,
-                                            base.hora
-                                        );
-
-                                    } else {
-
-                                        sqliteService.insertarHabito(
-                                            base.titulo,
-                                            base.hora
-                                        );
-                                    }
-                                }
-                            }}
-                        >
-
-                            <Text
-                                style={{
-                                    fontWeight: "bold",
-                                    color: colors.textPrimary
-                                }}
-                            >
-                                {base.titulo}
-                            </Text>
-
-                            <Text
-                                style={{
-                                    color: colors.textSecondary
-                                }}
-                            >
-                                {base.hora}
-                            </Text>
-
-                        </TouchableOpacity>
-                    );
-                })}
-
-            </View>
+        setShowPickerModal(
+            false
         );
     };
 
-    const renderItem = ({ item }) => {
+    const agregarHabitoBase =
+        async (base) => {
+
+            const existe =
+                habitos.some(
+                    h =>
+                        h.titulo
+                            .toLowerCase()
+                            .trim() ===
+                        base.titulo
+                            .toLowerCase()
+                            .trim()
+                );
+
+            if (existe)
+                return;
+
+            try {
+
+                if (user) {
+
+                    await crearHabito(
+                        user,
+                        base.titulo,
+                        base.hora,
+                        true
+                    );
+
+                } else {
+
+                    await sqliteService.insertarHabito(
+                        base.titulo,
+                        base.hora
+                    );
+                }
+
+            } catch (error) {
+
+                console.log(error);
+            }
+        };
+
+    const renderItem = ({
+        item
+    }) => {
 
         return (
 
             <TouchableOpacity
-                style={{
-                    padding: 15,
-                    marginVertical: 6,
-                    backgroundColor:
-                        item?.completado
-                            ? colors.success
-                            : colors.surface,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: colors.border
-                }}
-                onPress={() => accionesHabito(item)}
+                activeOpacity={0.85}
+                style={[
+                    styles.card,
+                    {
+                        backgroundColor:
+                            item.completadoHoy
+                                ? darkMode
+                                    ? "#052E16"
+                                    : "#ecfdf3"
+                                : theme.surface,
+
+                        borderColor:
+                            item.completadoHoy
+                                ? colors.success
+                                : theme.border
+                    }
+                ]}
+                onPress={() =>
+                    accionesHabito(
+                        item
+                    )
+                }
             >
 
-                <Text
-                    style={{
-                        fontWeight: "bold",
-                        color: colors.textPrimary,
-                        textDecorationLine:
-                            item?.completado
-                                ? "line-through"
-                                : "none"
-                    }}
+                <View
+                    style={
+                        styles.cardLeft
+                    }
                 >
-                    {item.titulo}
-                </Text>
 
-                <Text
-                    style={{
-                        color: colors.textSecondary
-                    }}
-                >
-                    Hora: {item.hora}
-                </Text>
+                    <View
+                        style={[
+                            styles.checkCircle,
+
+                            item.completadoHoy &&
+                            styles.checkCircleActive
+                        ]}
+                    >
+
+                        <Text
+                            style={
+                                styles.checkText
+                            }
+                        >
+                            ✓
+                        </Text>
+
+                    </View>
+
+                    <View>
+
+                        <Text
+                            style={[
+                                styles.cardTitle,
+                                {
+                                    color:
+                                        theme.textPrimary
+                                },
+
+                                item.completadoHoy && {
+                                    textDecorationLine:
+                                        "line-through"
+                                }
+                            ]}
+                        >
+                            {
+                                item.titulo
+                            }
+                        </Text>
+
+                        <Text
+                            style={[
+                                styles.cardTime,
+                                {
+                                    color:
+                                        theme.textSecondary
+                                }
+                            ]}
+                        >
+                            ⏰ {item.hora}
+                        </Text>
+
+                    </View>
+
+                </View>
 
             </TouchableOpacity>
         );
@@ -406,306 +616,456 @@ const HomeScreen = () => {
     return (
 
         <View
-            style={{
-                flex: 1,
-                padding: 20,
-                backgroundColor: colors.background
-            }}
+            style={[
+                styles.container,
+                {
+                    backgroundColor:
+                        theme.background
+                }
+            ]}
         >
 
-            <Text
-                style={{
-                    fontSize: 24,
-                    fontWeight: "bold",
-                    marginBottom: 10
-                }}
-            >
-                Hábitos recomendados
-            </Text>
+            <StatusBar
+                barStyle={
+                    darkMode
+                        ? "light-content"
+                        : "dark-content"
+                }
+            />
 
-            {renderPredefinidos()}
+            <FlatList
+                data={habitos}
+                renderItem={
+                    renderItem
+                }
+                keyExtractor={(
+                    item
+                ) =>
+                    item.id.toString()
+                }
+                showsVerticalScrollIndicator={
+                    false
+                }
+                contentContainerStyle={{
+                    padding: 22,
+                    paddingBottom: 160
+                }}
+                ListHeaderComponent={
+
+                    <>
+
+                        <View
+                            style={
+                                styles.header
+                            }
+                        >
+
+                            <Text
+                                style={[
+                                    styles.logo,
+                                    {
+                                        color:
+                                            theme.textPrimary
+                                    }
+                                ]}
+                            >
+                                Better Habits
+                            </Text>
+
+                            <Text
+                                style={[
+                                    styles.subtitle,
+                                    {
+                                        color:
+                                            theme.textSecondary
+                                    }
+                                ]}
+                            >
+                                Construye una mejor
+                                versión de ti
+                            </Text>
+
+                        </View>
+
+                        <View
+                            style={
+                                styles.progressCard
+                            }
+                        >
+
+                            <Text
+                                style={
+                                    styles.progressTitle
+                                }
+                            >
+                                Progreso diario
+                            </Text>
+
+                            <Text
+                                style={
+                                    styles.progressNumber
+                                }
+                            >
+                                {porcentaje}%
+                            </Text>
+
+                            <View
+                                style={
+                                    styles.progressBar
+                                }
+                            >
+
+                                <View
+                                    style={[
+                                        styles.progressFill,
+                                        {
+                                            width:
+                                                `${porcentaje}%`
+                                        }
+                                    ]}
+                                />
+
+                            </View>
+
+                            <Text
+                                style={
+                                    styles.progressText
+                                }
+                            >
+                                {
+                                    completados
+                                }{" "}
+                                de{" "}
+                                {
+                                    habitos.length
+                                }{" "}
+                                hábitos completados
+                            </Text>
+
+                        </View>
+
+                        <Text
+                            style={[
+                                styles.sectionTitle,
+                                {
+                                    color:
+                                        theme.textPrimary
+                                }
+                            ]}
+                        >
+                            Recomendados
+                        </Text>
+
+                        <View
+                            style={
+                                styles.recommendedContainer
+                            }
+                        >
+
+                            {habitosBase.map(
+                                (
+                                    base,
+                                    index
+                                ) => {
+
+                                    const existe =
+                                        habitos.some(
+                                            h =>
+                                                h.titulo
+                                                    .toLowerCase()
+                                                    .trim() ===
+                                                base.titulo
+                                                    .toLowerCase()
+                                                    .trim()
+                                        );
+
+                                    return (
+
+                                        <TouchableOpacity
+                                            key={
+                                                index
+                                            }
+                                            activeOpacity={
+                                                existe
+                                                    ? 1
+                                                    : 0.85
+                                            }
+                                            disabled={
+                                                existe
+                                            }
+                                            style={[
+                                                styles.recommendedCard,
+                                                {
+                                                    backgroundColor:
+                                                        theme.surface,
+
+                                                    borderColor:
+                                                        existe
+                                                            ? colors.success
+                                                            : theme.border,
+
+                                                    opacity:
+                                                        existe
+                                                            ? 0.6
+                                                            : 1
+                                                }
+                                            ]}
+                                            onPress={() =>
+                                                agregarHabitoBase(
+                                                    base
+                                                )
+                                            }
+                                        >
+
+                                            <Text
+                                                style={[
+                                                    styles.recommendedTitle,
+                                                    {
+                                                        color:
+                                                            theme.textPrimary
+                                                    }
+                                                ]}
+                                            >
+                                                {
+                                                    base.titulo
+                                                }
+                                            </Text>
+
+                                            <Text
+                                                style={[
+                                                    styles.recommendedTime,
+                                                    {
+                                                        color:
+                                                            theme.textSecondary
+                                                    }
+                                                ]}
+                                            >
+                                                ⏰{" "}
+                                                {
+                                                    base.hora
+                                                }
+                                            </Text>
+
+                                        </TouchableOpacity>
+                                    );
+                                }
+                            )}
+
+                        </View>
+
+                        <Text
+                            style={[
+                                styles.sectionTitle,
+                                {
+                                    marginTop: 28,
+                                    color:
+                                        theme.textPrimary
+                                }
+                            ]}
+                        >
+                            Tus hábitos
+                        </Text>
+
+                    </>
+                }
+            />
 
             <TouchableOpacity
-                style={{
-                    marginTop: 20,
-                    backgroundColor: colors.primary,
-                    padding: 15,
-                    borderRadius: 12,
-                    alignItems: "center"
-                }}
-                onPress={() => setModalVisible(true)}
+                activeOpacity={0.85}
+                style={styles.fab}
+                onPress={() =>
+                    setModalVisible(
+                        true
+                    )
+                }
             >
 
                 <Text
-                    style={{
-                        color: "#fff",
-                        fontWeight: "bold"
-                    }}
+                    style={
+                        styles.fabText
+                    }
                 >
-                    + Agregar hábito
+                    +
                 </Text>
 
             </TouchableOpacity>
 
-            <FlatList
-                data={habitos}
-                keyExtractor={(item, index) =>
-                    item?.id
-                        ? item.id.toString()
-                        : index.toString()
-                }
-                renderItem={renderItem}
-                style={{ marginTop: 15 }}
-            />
-
-            {/* MODAL CREAR */}
-
-            <Modal
-                visible={modalVisible}
-                transparent
-                animationType="slide"
-            >
-
-                <View
-                    style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        backgroundColor: "rgba(0,0,0,0.5)"
-                    }}
-                >
-
-                    <View
-                        style={{
-                            backgroundColor: "#fff",
-                            margin: 20,
-                            borderRadius: 12,
-                            padding: 20
-                        }}
-                    >
-
-                        <Text
-                            style={{
-                                fontSize: 18,
-                                fontWeight: "bold",
-                                marginBottom: 10
-                            }}
-                        >
-                            Nuevo hábito
-                        </Text>
-
-                        <TextInput
-                            placeholder="Nombre del hábito"
-                            value={nuevoHabito}
-                            onChangeText={setNuevoHabito}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: "#ccc",
-                                padding: 10,
-                                borderRadius: 8,
-                                marginBottom: 10
-                            }}
-                        />
-
-                        <TouchableOpacity
-                            style={{
-                                padding: 12,
-                                backgroundColor: "#eee",
-                                borderRadius: 8
-                            }}
-                            onPress={() =>
-                                setShowPickerCrear(true)
-                            }
-                        >
-
-                            <Text>
-                                {formatHora(hora)}
-                            </Text>
-
-                        </TouchableOpacity>
-
-                        {showPickerCrear && (
-
-                            <DateTimePicker
-                                value={hora}
-                                mode="time"
-                                display="default"
-                                onChange={onChangeHora}
-                            />
-                        )}
-
-                        <TouchableOpacity
-                            style={{
-                                marginTop: 15,
-                                backgroundColor: colors.primary,
-                                padding: 12,
-                                borderRadius: 10,
-                                alignItems: "center"
-                            }}
-                            onPress={agregarHabito}
-                        >
-
-                            <Text
-                                style={{
-                                    color: "#fff"
-                                }}
-                            >
-                                Guardar
-                            </Text>
-
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={{
-                                marginTop: 10,
-                                alignItems: "center"
-                            }}
-                            onPress={() =>
-                                setModalVisible(false)
-                            }
-                        >
-
-                            <Text>
-                                Cancelar
-                            </Text>
-
-                        </TouchableOpacity>
-
-                    </View>
-                </View>
-            </Modal>
-
-            {/* MODAL ACCIONES */}
-
-            <Modal
-                visible={modalAcciones}
-                transparent
-                animationType="fade"
-                onRequestClose={cerrarModalAcciones}
-            >
-
-                <View
-                    style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        backgroundColor: "rgba(0,0,0,0.4)"
-                    }}
-                >
-
-                    <View
-                        style={{
-                            width: "85%",
-                            backgroundColor: "#fff",
-                            borderRadius: 16,
-                            padding: 20
-                        }}
-                    >
-
-                        <Text
-                            style={{
-                                fontSize: 18,
-                                fontWeight: "bold",
-                                marginBottom: 10,
-                                textAlign: "center"
-                            }}
-                        >
-                            {habitoSeleccionado?.titulo}
-                        </Text>
-
-                        <TouchableOpacity
-                            style={{ padding: 12 }}
-                            onPress={completar}
-                        >
-
-                            <Text
-                                style={{
-                                    textAlign: "center"
-                                }}
-                            >
-                                Completar
-                            </Text>
-
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={{ padding: 12 }}
-                            onPress={() =>
-                                setShowPickerModal(true)
-                            }
-                        >
-
-                            <Text
-                                style={{
-                                    textAlign: "center"
-                                }}
-                            >
-                                Cambiar hora
-                            </Text>
-
-                        </TouchableOpacity>
-
-                        {showPickerModal && (
-
-                            <DateTimePicker
-                                value={hora}
-                                mode="time"
-                                display="default"
-                                onChange={onChangeHora}
-                            />
-                        )}
-
-                        <TouchableOpacity
-                            style={{ padding: 12 }}
-                            onPress={confirmarCambioHora}
-                        >
-
-                            <Text
-                                style={{
-                                    textAlign: "center"
-                                }}
-                            >
-                                Guardar hora
-                            </Text>
-
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={{ padding: 12 }}
-                            onPress={eliminar}
-                        >
-
-                            <Text
-                                style={{
-                                    textAlign: "center",
-                                    color: "red"
-                                }}
-                            >
-                                Eliminar
-                            </Text>
-
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={{ marginTop: 10 }}
-                            onPress={cerrarModalAcciones}
-                        >
-
-                            <Text
-                                style={{
-                                    textAlign: "center"
-                                }}
-                            >
-                                Cerrar
-                            </Text>
-
-                        </TouchableOpacity>
-
-                    </View>
-                </View>
-            </Modal>
-
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+
+    container: {
+        flex: 1
+    },
+
+    header: {
+        marginTop: 10,
+        marginBottom: 28
+    },
+
+    logo: {
+        fontSize: 34,
+        fontWeight: "800"
+    },
+
+    subtitle: {
+        marginTop: 8,
+        fontSize: 16
+    },
+
+    progressCard: {
+        backgroundColor:
+            colors.primary,
+        borderRadius: 28,
+        padding: 24,
+        marginBottom: 28
+    },
+
+    progressTitle: {
+        color: "#fff",
+        fontSize: 16,
+        opacity: 0.9
+    },
+
+    progressNumber: {
+        color: "#fff",
+        fontSize: 42,
+        fontWeight: "800",
+        marginTop: 10
+    },
+
+    progressBar: {
+        height: 10,
+        backgroundColor:
+            "rgba(255,255,255,0.2)",
+        borderRadius: 999,
+        marginTop: 18,
+        overflow: "hidden"
+    },
+
+    progressFill: {
+        height: "100%",
+        backgroundColor: "#fff",
+        borderRadius: 999
+    },
+
+    progressText: {
+        marginTop: 14,
+        color: "#fff",
+        opacity: 0.9
+    },
+
+    sectionTitle: {
+        fontSize: 22,
+        fontWeight: "700",
+        marginBottom: 18
+    },
+
+    recommendedContainer: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent:
+            "space-between"
+    },
+
+    recommendedCard: {
+        width: "48%",
+        borderRadius: 24,
+        padding: 18,
+        marginBottom: 14,
+        borderWidth: 1
+    },
+
+    recommendedTitle: {
+        fontSize: 16,
+        fontWeight: "700",
+        marginBottom: 10
+    },
+
+    recommendedTime: {},
+
+    card: {
+        borderRadius: 24,
+        padding: 20,
+        marginBottom: 16,
+        borderWidth: 1
+    },
+
+    cardLeft: {
+        flexDirection: "row",
+        alignItems: "center"
+    },
+
+    checkCircle: {
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        backgroundColor:
+            "#e5e7eb",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 16
+    },
+
+    checkCircleActive: {
+        backgroundColor:
+            colors.success
+    },
+
+    checkText: {
+        color: "#fff",
+        fontWeight: "800"
+    },
+
+    cardTitle: {
+        fontSize: 18,
+        fontWeight: "700"
+    },
+
+    cardTime: {
+        marginTop: 6
+    },
+
+    fab: {
+        position: "absolute",
+        right: 24,
+        bottom: 95,
+
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+
+        backgroundColor:
+            colors.primary,
+
+        justifyContent:
+            "center",
+
+        alignItems:
+            "center",
+
+        shadowColor: "#000",
+
+        shadowOffset: {
+            width: 0,
+            height: 6,
+        },
+
+        shadowOpacity: 0.18,
+
+        shadowRadius: 10,
+
+        elevation: 10,
+    },
+
+    fabText: {
+        color: "#fff",
+        fontSize: 34,
+        fontWeight: "300",
+        lineHeight: 36
+    }
+});
 
 export default HomeScreen;
